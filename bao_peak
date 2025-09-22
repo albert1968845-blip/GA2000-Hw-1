@@ -1,0 +1,36 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import InterpolatedUnivariateSpline as Sp
+from scipy.integrate import quad
+
+data = np.loadtxt("lcdm_z0.matter_pk")
+k_vals = data[:,0]
+P_vals = data[:,1]
+
+spline = Sp(k_vals,P_vals,k=3)
+
+def xi(r):
+    Integrand = lambda kk: kk*spline(kk)
+    result, _ = quad(Integrand, k_vals.min(), k_vals.max(), weight='sin', wvar=r, limit=100)
+    return (result/(2*np.pi**2*r))
+
+r_vals = np.linspace(50,120,100)
+xi_vals = np.array([xi(r) for r in r_vals])
+r2xi = r_vals**2 * xi_vals
+
+mask = (r_vals >= 80) & (r_vals <= 120)
+idx_local = np.argmax(r2xi[mask])
+idx_global = np.where(mask)[0][idx_local]
+peak_r = r_vals[idx_global]
+
+
+plt.plot(r_vals, r2xi, label=r"$r^2 \xi(r)$")
+plt.axvline(peak_r, color='r', ls='--', label=f"BAO peak ~ {peak_r:.1f} Mpc/h")
+plt.xlabel(r"$r\,[\mathrm{Mpc}/h]$")
+plt.ylabel(r"$r^2 \xi(r)$")
+plt.title("BAO feature from power spectrum")
+plt.legend()
+plt.grid(True, ls="--", alpha=0.6)
+plt.show()
+
+print(f"BAO peak scale ≈ {peak_r:.2f} Mpc/h")
