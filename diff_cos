@@ -24,7 +24,7 @@ def rel_err(app,real):
     app, real = np.float32(app), np.float32(real)
     return np.abs((app-real)/real)
 
-trueval = -sin(0.1)
+trueval = -sin(0.1)         # Calculate error at 0.1
 hs = np.logspace(-8, -0.1, 100)
 err_forward=[]
 for h in hs:
@@ -50,6 +50,38 @@ plt.loglog(hs, err_extra, '-', label="extrapolate")
 
 plt.xlabel("h")
 plt.ylabel("relative error at x=0.1")
+plt.title("Error vs h")
+plt.legend()
+plt.grid(True, which="major", ls="--")
+plt.show()
+
+
+trueval = -sin(1)      # Calculate error at 1
+hs = np.logspace(-8, -0.5, 100)
+err_forward=[]
+for h in hs:
+    val = Df_forward(cos, 1, h)
+    ep = rel_err(val, trueval)
+    err_forward.append(np.float32(ep))
+
+err_central=[]
+for h in hs:
+    val = Df_central(cos, 1, h)
+    ep = rel_err(val, trueval)
+    err_central.append(np.float32(ep))
+
+err_extra=[]
+for h in hs:
+    val = Df_extrapolate(cos, 1, h)
+    ep = rel_err(val, trueval)
+    err_extra.append(np.float32(ep))
+
+plt.loglog(hs, err_forward, '-', label="forward")
+plt.loglog(hs, err_central, '-', label="ce?ntral")
+plt.loglog(hs, err_extra, '-', label="extrapolate")
+
+plt.xlabel("h")
+plt.ylabel("relative error at x=1")
 plt.title("Error vs h")
 plt.legend()
 plt.grid(True, which="major", ls="--")
