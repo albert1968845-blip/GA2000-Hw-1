@@ -1,0 +1,56 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def cos(x):
+    return np.cos(np.array(x, dtype=np.float32))
+
+def sin(x):
+    return np.sin(np.array(x, dtype=np.float32))
+
+def Df_forward(f, x, h):
+    x, h = np.float32(x), np.float32(h)
+    return (f(x+h)-f(x))/h
+
+def Df_central(f, x, h):
+    x, h = np.float32(x), np.float32(h)
+    return (f(x+h)-f(x-h))/(2*h)
+
+def Df_extrapolate(f, x, h):
+    D_h = Df_central(f, x, h)
+    D_h2 = Df_central(f, x, h/2)
+    return (4*D_h2 - D_h)/3
+
+def rel_err(app,real):
+    app, real = np.float32(app), np.float32(real)
+    return np.abs((app-real)/real)
+
+trueval = -sin(0.1)
+hs = np.logspace(-8, -0.1, 100)
+err_forward=[]
+for h in hs:
+    val = Df_forward(cos, 0.1, h)
+    ep = rel_err(val, trueval)
+    err_forward.append(np.float32(ep))
+
+err_central=[]
+for h in hs:
+    val = Df_central(cos, 0.1, h)
+    ep = rel_err(val, trueval)
+    err_central.append(np.float32(ep))
+
+err_extra=[]
+for h in hs:
+    val = Df_extrapolate(cos, 0.1, h)
+    ep = rel_err(val, trueval)
+    err_extra.append(np.float32(ep))
+
+plt.loglog(hs, err_forward, '-', label="forward")
+plt.loglog(hs, err_central, '-', label="central")
+plt.loglog(hs, err_extra, '-', label="extrapolate")
+
+plt.xlabel("h")
+plt.ylabel("relative error at x=0.1")
+plt.title("Error vs h")
+plt.legend()
+plt.grid(True, which="major", ls="--")
+plt.show()
